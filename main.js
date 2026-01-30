@@ -1,98 +1,275 @@
-// Bài tập buổi 1
-// Câu 1: Constructor Function
-function Product(name, category, price, quantity, isAvailable) {
-    this.name = name;
-    this.category = category;
-    this.price = price;
-    this.quantity = quantity;
-    this.isAvailable = isAvailable;
+async function GetData() {
+    try {
+        let res = await fetch('http://localhost:3000/posts')
+        if (res.ok) {
+            let posts = await res.json();
+            let bodyTable = document.getElementById('body-table');
+            bodyTable.innerHTML = '';
+            for (const post of posts) {
+                bodyTable.innerHTML += convertObjToHTML(post)
+            }
+        }
+    } catch (error) {
+        console.log(error);
+    }
 }
 
-// Câu 2: Khởi tạo dữ liệu (Biến toàn cục để các hàm đều dùng được)
-const products = [
-    new Product("MacBook Pro M2", "Electronics", 35000000, 5, true),
-    new Product("iPhone 15", "Electronics", 28000000, 0, true),
-    new Product("Samsung Galaxy S24", "Electronics", 31000000, 10, true),
-    new Product("Logitech Mouse", "Accessories", 1500000, 50, true),
-    new Product("Mechanical Keyboard", "Accessories", 2500000, 0, false),
-    new Product("Dell Monitor", "Electronics", 8000000, 12, true)
-];
+async function getNextId() {
+    try {
+        let res = await fetch('http://localhost:3000/posts');
+        if (res.ok) {
+            let posts = await res.json();
+            if (posts.length === 0) {
+                return "1";
+            }
+            // Find max ID and add 1
+            let maxId = Math.max(...posts.map(p => parseInt(p.id) || 0));
+            return (maxId + 1).toString();
+        }
+        return "1";
+    } catch (error) {
+        console.log(error);
+        return "1";
+    }
+}
 
-function display(title, data) {
-    const outputDiv = document.getElementById('output');
-    
-    let content = "";
-    if (typeof data === 'object') {
-        content = JSON.stringify(data, null, 4); 
+async function Save() {
+    let id = document.getElementById("id_txt").value.trim();
+    let title = document.getElementById("title_txt").value;
+    let views = document.getElementById("views_txt").value;
+
+    if (!id) {
+        id = await getNextId();
+    }
+
+    let getItem = await fetch('http://localhost:3000/posts/' + id);
+    if (getItem.ok) {
+
+        let existingPost = await getItem.json();
+        let res = await fetch('http://localhost:3000/posts/' + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: id,
+                title: title,
+                views: views,
+                isDeleted: existingPost.isDeleted || false
+            })
+        })
     } else {
-        content = data;
+
+        let res = await fetch('http://localhost:3000/posts', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: id,
+                title: title,
+                views: views,
+                isDeleted: false
+            })
+        })
+    }
+    // Clear form
+    document.getElementById("id_txt").value = '';
+    document.getElementById("title_txt").value = '';
+    document.getElementById("views_txt").value = '';
+
+    GetData();
+    return false;
+}
+
+function convertObjToHTML(post) {
+    let deletedStyle = post.isDeleted ? 'style="text-decoration: line-through; opacity: 0.6;"' : '';
+    let actionButton = post.isDeleted
+        ? `<input type='button' value='Restore' onclick='Restore(${post.id})'>`
+        : `<input type='button' value='Delete' onclick='Delete(${post.id})'>`;
+
+    return `<tr ${deletedStyle}>
+    <td>${post.id}</td>
+    <td>${post.title}</td>
+    <td>${post.views}</td>
+    <td>${actionButton}</td>
+    </tr>`
+}
+
+async function Delete(id) {
+
+    let getItem = await fetch('http://localhost:3000/posts/' + id);
+    if (getItem.ok) {
+        let post = await getItem.json();
+        let res = await fetch('http://localhost:3000/posts/' + id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                isDeleted: true
+            })
+        })
+        if (res.ok) {
+            GetData()
+        }
+    }
+    return false;
+}
+
+async function Restore(id) {
+
+    let res = await fetch('http://localhost:3000/posts/' + id, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            isDeleted: false
+        })
+    })
+    if (res.ok) {
+        GetData()
+    }
+    return false;
+}
+
+async function GetComments() {
+    try {
+        let res = await fetch('http://localhost:3000/comments')
+        if (res.ok) {
+            let comments = await res.json();
+            let bodyTable = document.getElementById('comments-body-table');
+            bodyTable.innerHTML = '';
+            for (const comment of comments) {
+                bodyTable.innerHTML += convertCommentToHTML(comment)
+            }
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function getNextCommentId() {
+    try {
+        let res = await fetch('http://localhost:3000/comments');
+        if (res.ok) {
+            let comments = await res.json();
+            if (comments.length === 0) {
+                return "1";
+            }
+
+            let maxId = Math.max(...comments.map(c => parseInt(c.id) || 0));
+            return (maxId + 1).toString();
+        }
+        return "1";
+    } catch (error) {
+        console.log(error);
+        return "1";
+    }
+}
+
+async function SaveComment() {
+    let id = document.getElementById("comment_id_txt").value.trim();
+    let text = document.getElementById("comment_text_txt").value;
+    let postId = document.getElementById("comment_postId_txt").value;
+
+
+    if (!id) {
+        id = await getNextCommentId();
     }
 
-    outputDiv.innerHTML = `<span class="highlight">--- ${title} ---</span>\n\n${content}`;
-}
+    let getItem = await fetch('http://localhost:3000/comments/' + id);
+    if (getItem.ok) {
 
-function showAllProducts() {
-    display("Câu 2: Toàn bộ danh sách sản phẩm", products);
-}
+        let existingComment = await getItem.json();
+        let res = await fetch('http://localhost:3000/comments/' + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: id,
+                text: text,
+                postId: postId,
+                isDeleted: existingComment.isDeleted || false
+            })
+        })
+    } else {
 
-function showNamePrice() {
-    // Câu 3
-    const result = products.map(p => ({ name: p.name, price: p.price }));
-    display("Câu 3: Chỉ lấy Tên và Giá", result);
-}
-
-function filterInStock() {
-    // Câu 4
-    const result = products.filter(p => p.quantity > 0);
-    display("Câu 4: Các sản phẩm còn hàng (Quantity > 0)", result);
-}
-
-function checkExpensive() {
-    // Câu 5
-    const hasExpensive = products.some(p => p.price > 30000000);
-    display("Câu 5: Có sản phẩm nào trên 30 triệu không?", hasExpensive ? "CÓ" : "KHÔNG");
-}
-
-function checkAccessories() {
-    // Câu 6
-    const accessories = products.filter(p => p.category === 'Accessories');
-    const allAvailable = accessories.every(p => p.isAvailable === true);
-    display("Câu 6: Tất cả Accessories có đang bán không?", 
-            allAvailable ? "Đúng, tất cả đang bán" : "Sai, có cái ngừng bán");
-}
-
-function calcTotalValue() {
-    // Câu 7
-    const total = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
-    const money = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
-    display("Câu 7: Tổng giá trị kho hàng", money);
-}
-
-function loopForOf() {
-    // Câu 8
-    let logText = "";
-    for (const p of products) {
-        const status = p.isAvailable ? "Đang bán" : "Ngừng bán";
-        logText += `${p.name} - ${p.category} - ${status}\n`;
+        let res = await fetch('http://localhost:3000/comments', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: id,
+                text: text,
+                postId: postId,
+                isDeleted: false
+            })
+        })
     }
-    display("Câu 8: Duyệt mảng (For...Of)", logText);
+
+
+    document.getElementById("comment_id_txt").value = '';
+    document.getElementById("comment_text_txt").value = '';
+    document.getElementById("comment_postId_txt").value = '';
+
+    GetComments();
+    return false;
 }
 
-function loopForIn() {
-    // Câu 9
-    let logText = "Duyệt properties của sản phẩm đầu tiên:\n";
-    const firstProduct = products[0];
-    
-    for (const key in firstProduct) {
-        logText += `Key: ${key} -> Value: ${firstProduct[key]}\n`;
+function convertCommentToHTML(comment) {
+    let deletedStyle = comment.isDeleted ? 'style="text-decoration: line-through; opacity: 0.6;"' : '';
+    let actionButton = comment.isDeleted
+        ? `<input type='button' value='Restore' onclick='RestoreComment(${comment.id})'>`
+        : `<input type='button' value='Delete' onclick='DeleteComment(${comment.id})'>`;
+
+    return `<tr ${deletedStyle}>
+    <td>${comment.id}</td>
+    <td>${comment.text}</td>
+    <td>${comment.postId}</td>
+    <td>${actionButton}</td>
+    </tr>`
+}
+
+async function DeleteComment(id) {
+
+    let getItem = await fetch('http://localhost:3000/comments/' + id);
+    if (getItem.ok) {
+        let comment = await getItem.json();
+        let res = await fetch('http://localhost:3000/comments/' + id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                isDeleted: true
+            })
+        })
+        if (res.ok) {
+            GetComments()
+        }
     }
-    display("Câu 9: Duyệt đối tượng (For...In)", logText);
+    return false;
 }
 
-function getSellingProducts() {
-    // Câu 10
-    const result = products
-        .filter(p => p.isAvailable && p.quantity > 0)
-        .map(p => p.name);
-    display("Câu 10: Tên SP đang bán & còn hàng", result);
+async function RestoreComment(id) {
+
+    let res = await fetch('http://localhost:3000/comments/' + id, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            isDeleted: false
+        })
+    })
+    if (res.ok) {
+        GetComments()
+    }
+    return false;
 }
+GetData();
+GetComments();

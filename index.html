@@ -1,45 +1,179 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BT Buổi 1</title>
+    <title>CRUD Application - Posts & Comments</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        h1 { color: #2c3e50; }
-        .controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-        button {
-            padding: 10px; background-color: #3498db; color: white;
-            border: none; border-radius: 4px; cursor: pointer; font-size: 14px;
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
-        button:hover { background-color: #2980b9; }
-        #output {
-            background-color: #f4f4f4; padding: 15px; border-radius: 5px;
-            border: 1px solid #ddd; min-height: 200px; white-space: pre-wrap; /* Giữ format xuống dòng */
-            font-family: monospace; /* Font kiểu code */
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
         }
-        .highlight { color: #e74c3c; font-weight: bold; }
+
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        thead {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="submit"],
+        input[type="button"] {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        input[type="submit"]:hover,
+        input[type="button"]:hover {
+            background-color: #45a049;
+        }
+
+        input[value="Delete"] {
+            background-color: #f44336;
+        }
+
+        input[value="Delete"]:hover {
+            background-color: #da190b;
+        }
+
+        input[value="Restore"] {
+            background-color: #2196F3;
+        }
+
+        input[value="Restore"]:hover {
+            background-color: #0b7dda;
+        }
+
+        .hint {
+            color: #888;
+            font-size: 12px;
+            font-style: italic;
+            margin-left: 5px;
+        }
     </style>
+    <script src="main.js"></script>
 </head>
+
 <body>
+    <div class="section">
+        <h2>📝 Posts Management</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Views</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="body-table">
+            </tbody>
+        </table>
 
-    <p>Nhấn vào các nút bên dưới để xem kết quả:</p>
-
-    <div class="controls">
-        <button onclick="showAllProducts()">Câu 2: Xem toàn bộ danh sách</button>
-        <button onclick="showNamePrice()">Câu 3: Chỉ lấy Name & Price</button>
-        <button onclick="filterInStock()">Câu 4: Lọc hàng còn kho (>0)</button>
-        <button onclick="checkExpensive()">Câu 5: Có hàng > 30 triệu?</button>
-        <button onclick="checkAccessories()">Câu 6: Tất cả Accessories đang bán?</button>
-        <button onclick="calcTotalValue()">Câu 7: Tổng giá trị kho</button>
-        <button onclick="loopForOf()">Câu 8: Duyệt (For...Of)</button>
-        <button onclick="loopForIn()">Câu 9: Duyệt thuộc tính (For...In)</button>
-        <button onclick="getSellingProducts()">Câu 10: Đang bán & Còn hàng</button>
+        <div class="form-group">
+            <label for="id_txt">ID:</label>
+            <input type="text" id="id_txt" placeholder="Leave empty for auto-generate" />
+            <span class="hint">(Optional - auto-generated if empty)</span>
+        </div>
+        <div class="form-group">
+            <label for="title_txt">Title:</label>
+            <input type="text" id="title_txt" placeholder="Enter post title" />
+        </div>
+        <div class="form-group">
+            <label for="views_txt">Views:</label>
+            <input type="text" id="views_txt" placeholder="Enter view count" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Save Post" onclick="Save()" />
+        </div>
     </div>
 
-    <h3>Kết quả hiển thị:</h3>
-    <div id="output"></div>
+    <div class="section">
+        <h2>💬 Comments Management</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Text</th>
+                    <th>Post ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="comments-body-table">
+            </tbody>
+        </table>
 
-    <script src="main.js"></script>
+        <div class="form-group">
+            <label for="comment_id_txt">ID:</label>
+            <input type="text" id="comment_id_txt" placeholder="Leave empty for auto-generate" />
+            <span class="hint">(Optional - auto-generated if empty)</span>
+        </div>
+        <div class="form-group">
+            <label for="comment_text_txt">Text:</label>
+            <input type="text" id="comment_text_txt" placeholder="Enter comment text" />
+        </div>
+        <div class="form-group">
+            <label for="comment_postId_txt">Post ID:</label>
+            <input type="text" id="comment_postId_txt" placeholder="Enter post ID" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Save Comment" onclick="SaveComment()" />
+        </div>
+    </div>
 </body>
+
 </html>
