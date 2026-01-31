@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Dashboard Sản Phẩm</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Tìm kiếm:</label>
+                <input type="text" id="searchInput" placeholder="Nhập tên sản phẩm...">
+            </div>
+
+            <div class="control-group">
+                <label>Hiển thị:</label>
+                <select id="pageSizeSelect">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Sắp xếp:</label>
+                <button onclick="sortData('price', 'asc')">Giá tăng &uarr;</button>
+                <button onclick="sortData('price', 'desc')">Giá giảm &darr;</button>
+                <button onclick="sortData('title', 'asc')">Tên A-Z &uarr;</button>
+                <button onclick="sortData('title', 'desc')">Tên Z-A &darr;</button>
+            </div>
+        </div>
+
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Hình ảnh</th> <th>Tên sản phẩm</th>
+                    <th>Giá</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="changePage(-1)">Trước</button>
+            <span id="pageInfo">Trang 1</span>
+            <button id="nextBtn" onclick="changePage(1)">Sau</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
