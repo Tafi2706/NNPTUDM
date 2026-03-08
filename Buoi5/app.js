@@ -11,8 +11,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-const MONGO_URI = 'mongodb+srv://ttai:12345@cluster0.zqgggic.mongodb.net/buoi5?appName=Cluster0';
-
 mongoose.connect(MONGO_URI);
 
 mongoose.connection.on('connected', () => {
